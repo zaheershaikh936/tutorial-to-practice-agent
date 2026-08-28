@@ -72,6 +72,7 @@ Each numbered step = one agent call, output of one feeds the next.
 
 ---
 
+<!-- ! here  -->
 ## 5. Day-by-Day Roadmap (3-day sprint)
 
 ### Day 1 — Build the core pipeline
