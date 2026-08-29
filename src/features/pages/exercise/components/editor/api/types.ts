@@ -44,3 +44,8 @@ export interface OutputComponentPropt {
     runError?: Error | null;
     testCaseNotes?: TestCaseNote[];
 }
+
+export interface TestCasePropmt {
+    case: string
+    checks: string
+}

@@ -1,19 +1,15 @@
 "use client"
-import { useEffect, useState } from "react"
 import Editor from "./components/editor"
 import ExerciseComponent from "./components/exercise-component"
 import { useExecuteProgram, useSupportLanguages } from "./components/editor/api/service"
 import { OutputComponent } from "./components/editor/components/output-component"
-import { getLatestPipelineResult } from "@/features/common/db/pipeline-db"
-import type { TestCaseNote } from "@/features/common/ai-model/utils/prompts"
+import { usePipelineResult } from "./hooks/use-pipeline-result"
+import { HintComponent } from "./components/editor/components/hint-component"
+import { TestCasesComponent } from "./components/editor/components/test-cases-compoent"
 
 const ExercisePage = () => {
-    const [testCaseNotes, setTestCaseNotes] = useState<TestCaseNote[]>([])
-    useEffect(() => {
-        getLatestPipelineResult().then((result) => {
-            setTestCaseNotes(result?.testCases?.test_case_notes ?? [])
-        })
-    }, [])
+    const pipelineResult = usePipelineResult()
+    const testCaseNotes = pipelineResult?.testCases?.test_case_notes ?? []
 
     const { data: languages = [] } = useSupportLanguages()
     const { mutate: runCode, data: result, isPending: isRunning, error: runError } = useExecuteProgram()
@@ -29,6 +25,7 @@ const ExercisePage = () => {
                         runError={runError}
                         testCaseNotes={testCaseNotes}
                     />
+                    <TestCasesComponent />
                 </section>
             </div>
             <div className="col-span-1">
@@ -37,6 +34,7 @@ const ExercisePage = () => {
                     onRun={runCode}
                     isRunning={isRunning}
                 />
+                <HintComponent />
             </div>
         </section>
     )

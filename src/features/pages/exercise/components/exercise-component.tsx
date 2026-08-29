@@ -1,21 +1,12 @@
 "use client"
-import { getLatestPipelineResult } from "@/features/common/db/pipeline-db"
-import type { PipelineResult } from "@/features/common/ai-model/pipeline"
 import { CircleHelp, Sparkles } from "lucide-react"
-import { useEffect, useState } from "react"
 import ProblemStatement from "./problem-statement"
+import { usePipelineResult } from "../hooks/use-pipeline-result"
 
 
 const ExerciseComponent = () => {
-    const [pipelineResult, setPipelineResult] = useState<PipelineResult | null>(null)
-    useEffect(() => {
-        getLatestPipelineResult().then((result) => {
-            setPipelineResult(result)
-        })
-    }, [])
-
+    const pipelineResult = usePipelineResult()
     const exercise = pipelineResult?.exercise
-
     return (
         <div className="border-b border-border px-6 py-6 sm:px-8">
             <div className="mb-4 flex items-center justify-between gap-2">
