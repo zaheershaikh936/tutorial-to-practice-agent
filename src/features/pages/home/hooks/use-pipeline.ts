@@ -2,8 +2,12 @@
 
 import { useState } from "react";
 import type { PipelineResult } from "@/features/common/ai-model/pipeline";
+import { saveLatestPipelineResult } from "../utils/pipeline-db";
+import { useRouter } from "next/navigation";
+
 
 export function usePipeline() {
+  const router = useRouter();
   const [transcript, setTranscript] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +31,12 @@ export function usePipeline() {
         setError(data.error ?? "Something went wrong");
         return;
       }
-      setResult(data as PipelineResult);
+      const pipelineResult = data as PipelineResult;
+      setResult(pipelineResult);
+      saveLatestPipelineResult(pipelineResult).catch((dbError) => {
+        console.error("Failed to save pipeline result to IndexedDB", dbError);
+      });
+      router.push("/exercise")
     } catch {
       setError("Failed to reach the API");
     } finally {
