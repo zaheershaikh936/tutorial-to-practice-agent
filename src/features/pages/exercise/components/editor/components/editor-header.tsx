@@ -1,13 +1,4 @@
 import { Button } from "@/components/ui/button"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import { editorLanguages, normalizeEditorLanguage } from "../../../utils/languages"
-import { runJavaScript, type RunLogEntry } from "../../../utils/run-javascript"
 import { LoaderCircle, Play } from "lucide-react"
 import LanguageSelector from "./language-selector"
 

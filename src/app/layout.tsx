@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Nunito } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/features/provider/header";
+import { QueryProvider } from "@/features/provider/query-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,9 +24,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${geistSans.variable} ${nunito.variable} h-full antialiased`}>
       <Header />
       <body className="container mx-auto">
-        <main className="min-h-screen bg-background text-foreground">
-          {children}
-        </main>
+        <QueryProvider>
+          <main className="min-h-screen bg-background text-foreground">
+            {children}
+          </main>
+        </QueryProvider>
       </body>
     </html>
   );

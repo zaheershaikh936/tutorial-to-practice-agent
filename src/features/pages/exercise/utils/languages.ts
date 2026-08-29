@@ -1,22 +1,3 @@
-export interface EditorLanguageOption {
-    value: string;
-    label: string;
-}
-
-export const editorLanguages: EditorLanguageOption[] = [
-    { value: "javascript", label: "JavaScript" },
-    { value: "typescript", label: "TypeScript" },
-    { value: "python", label: "Python" },
-    { value: "java", label: "Java" },
-    { value: "csharp", label: "C#" },
-    { value: "cpp", label: "C++" },
-    { value: "c", label: "C" },
-    { value: "go", label: "Go" },
-    { value: "ruby", label: "Ruby" },
-    { value: "rust", label: "Rust" },
-    { value: "php", label: "PHP" },
-];
-
 const DEFAULT_LANGUAGE = "javascript";
 
 const ALIASES: Record<string, string> = {
