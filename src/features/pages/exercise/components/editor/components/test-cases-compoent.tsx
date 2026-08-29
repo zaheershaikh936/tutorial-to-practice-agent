@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { CheckCircle2, ChevronDown, FlaskConical } from 'lucide-react'
-import { TestCasePropmt } from '../api/types'
 import { usePipelineResult } from '../../../hooks/use-pipeline-result'
 
 
