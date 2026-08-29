@@ -4,15 +4,9 @@ import type { PipelineResult } from "@/features/common/ai-model/pipeline"
 import { CircleHelp, Sparkles } from "lucide-react"
 import { useEffect, useState } from "react"
 import ProblemStatement from "./problem-statement"
-import type { ExecuteProgramResType } from "./editor/api/types"
 
-interface ExerciseComponentProps {
-    result?: ExecuteProgramResType
-    isRunning?: boolean
-    runError?: Error | null
-}
 
-const ExerciseComponent = ({ result, isRunning, runError }: ExerciseComponentProps) => {
+const ExerciseComponent = () => {
     const [pipelineResult, setPipelineResult] = useState<PipelineResult | null>(null)
     useEffect(() => {
         getLatestPipelineResult().then((result) => {

@@ -1,4 +1,4 @@
-import { input } from "motion/react-client";
+import type { TestCaseNote } from "@/features/common/ai-model/utils/prompts";
 
 export interface PistonLanguageResType {
     id: string;
@@ -42,4 +42,5 @@ export interface OutputComponentPropt {
     result?: ExecuteProgramResType;
     isRunning?: boolean;
     runError?: Error | null;
-} 
+    testCaseNotes?: TestCaseNote[];
+}

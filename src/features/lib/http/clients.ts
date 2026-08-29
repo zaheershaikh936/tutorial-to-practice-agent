@@ -5,9 +5,7 @@ import { createHttpClient } from "./create-client";
  * Every base URL this app talks to. Add a new entry here to register another
  * API - no other code needs to change.
  */
-export const API_BASE_URLS = {
-    piston: "http://130.210.56.57:2000/api/v2",
-} as const;
+export const API_BASE_URLS = { piston: "http://130.210.56.57.nip.io/api/v2" } as const;
 
 export type ApiName = keyof typeof API_BASE_URLS;
 

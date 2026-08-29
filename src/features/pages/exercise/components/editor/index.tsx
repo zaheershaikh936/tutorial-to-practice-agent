@@ -6,6 +6,7 @@ import { getLatestPipelineResult } from "@/features/common/db/pipeline-db"
 import { normalizeEditorLanguage, toMonacoLanguage, fileNameFor } from "../../utils/languages"
 import EditorHeader from "./components/editor-header"
 import { resolvePistonVersion } from "./api/resolve-runtime"
+import { JEST_SHIM_SOURCE } from "./api/jest-shim"
 import type { PistonLanguageResType, ExecuteProgramResponseBody } from "./api/types"
 
 interface EditorProps {
@@ -47,6 +48,22 @@ const Editor = ({ languages, onRun, isRunning }: EditorProps) => {
         })
     }
 
+    const testCode = exercise ? pipelineResult?.testCases?.test_code : undefined
+    const canRunTests = canRun && language === "javascript" && Boolean(testCode)
+
+    function handleRunTests() {
+        if (!canRunTests || isRunning || !version || !testCode) return
+        const code = editorRef.current?.getValue() ?? ""
+        const combined = [JEST_SHIM_SOURCE, code, testCode, "__printTestResults();"].join("\n\n")
+        onRun({
+            fileName: fileNameFor(language),
+            code: combined,
+            language,
+            version,
+            args: [],
+        })
+    }
+
     return (
         <section className="flex h-full flex-col overflow-hidden rounded-2xl border border-border">
             <EditorHeader
@@ -54,6 +71,8 @@ const Editor = ({ languages, onRun, isRunning }: EditorProps) => {
                 setLanguage={setLanguage}
                 handleRun={handleRun}
                 canRun={canRun}
+                handleRunTests={handleRunTests}
+                canRunTests={canRunTests}
                 isRunning={isRunning}
             />
             <div className="min-h-0 flex-1">
