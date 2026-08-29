@@ -1,14 +1,14 @@
+import Editor from "./components/editor"
 import ExerciseComponent from "./components/exercise-component"
 
 const ExercisePage = () => {
     return (
-        <section className="grid grid-cols-2 w-full gap-5">
+        <section className="grid grid-cols-2 h-full min-h-[calc(100vh-200px)] gap-5">
             <div className="col-span-1">
-                <h2 className="text-2xl font-bold mb-3">Exercises</h2>
                 <ExerciseComponent />
             </div>
             <div className="col-span-1">
-                <h2 className="text-2xl font-bold">Tutorial Transcript</h2>
+                <Editor />
             </div>
         </section>
     )
