@@ -6,7 +6,7 @@ import { createHttpClient } from "./create-client";
  * API - no other code needs to change.
  */
 export const API_BASE_URLS = {
-    piston: "https://emkc.org/api/v2/piston",
+    piston: "http://130.210.56.57:2000/api/v2",
 } as const;
 
 export type ApiName = keyof typeof API_BASE_URLS;

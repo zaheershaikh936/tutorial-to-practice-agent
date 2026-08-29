@@ -10,8 +10,8 @@ import {
 
 
 interface LanguageSelectorProps {
-    language: any;
-    setLanguage: (language: any) => void;
+    language: string;
+    setLanguage: (language: string) => void;
 }
 
 const LanguageSelector = ({ language, setLanguage }: LanguageSelectorProps) => {
@@ -32,13 +32,16 @@ const LanguageSelector = ({ language, setLanguage }: LanguageSelectorProps) => {
             }
             label={"Language"}
             defaultValue={defaultValue?.id}
-            onChange={(value) => setLanguage(value.label)}
+            onChange={(value) => {
+                const selected = data?.find((item) => item.id === value.id);
+                if (selected) setLanguage(selected.language);
+            }}
         />
     )
 }
 
 const LanguageSelectorHasError = () => {
-    return <Alert>
+    return <Alert variant="destructive" className="border-0 shadow-none">
         <AlertCircleIcon />
         <AlertTitle>Failed to load languages</AlertTitle>
         <AlertDescription>

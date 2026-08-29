@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query"
-import { supportLanguages } from "./helper"
-import { PistonLanguageResType } from "./types"
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { ExecuteProgram, supportLanguages } from "./helper"
+import { ExecuteProgramResponseBody, ExecuteProgramResType, PistonLanguageResType } from "./types"
 
 const KEYS = {
     SUPPORT_LANGUAGES: "SUPPORT_LANGUAGES"
@@ -11,5 +11,11 @@ export const useSupportLanguages = () => {
         queryFn: () => supportLanguages(),
         staleTime: 24 * 60 * 60 * 1000,
         gcTime: 24 * 60 * 60 * 1000,
+    })
+}
+
+export const useExecuteProgram = () => {
+    return useMutation<ExecuteProgramResType, Error, ExecuteProgramResponseBody>({
+        mutationFn: (body) => ExecuteProgram(body),
     })
 }

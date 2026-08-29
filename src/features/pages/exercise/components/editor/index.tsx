@@ -3,15 +3,20 @@ import { useEffect, useRef, useState } from "react"
 import { Editor as MonacoEditor, type OnMount } from '@monaco-editor/react'
 import type { PipelineResult } from "@/features/common/ai-model/pipeline"
 import { getLatestPipelineResult } from "@/features/common/db/pipeline-db"
-import { normalizeEditorLanguage } from "../../utils/languages"
+import { normalizeEditorLanguage, toMonacoLanguage, fileNameFor } from "../../utils/languages"
 import EditorHeader from "./components/editor-header"
+import { resolvePistonVersion } from "./api/resolve-runtime"
+import type { PistonLanguageResType, ExecuteProgramResponseBody } from "./api/types"
 
-const Editor = () => {
+interface EditorProps {
+    languages: PistonLanguageResType[]
+    onRun: (body: ExecuteProgramResponseBody) => void
+    isRunning: boolean
+}
+
+const Editor = ({ languages, onRun, isRunning }: EditorProps) => {
     const [pipelineResult, setPipelineResult] = useState<PipelineResult | null>(null)
     const [language, setLanguage] = useState("javascript")
-    const [isRunning, setIsRunning] = useState(false)
-    const [hasRun, setHasRun] = useState(false)
-    const [runError, setRunError] = useState<string | null>(null)
 
     const editorRef = useRef<Parameters<OnMount>[0] | null>(null)
 
@@ -23,22 +28,23 @@ const Editor = () => {
     }, [])
 
     const exercise = pipelineResult?.exercise
-    const canRun = language === "javascript"
+    const version = resolvePistonVersion(languages, language)
+    const canRun = Boolean(version)
 
     const handleMount: OnMount = (editor) => {
         editorRef.current = editor
     }
 
-    async function handleRun() {
-        if (!canRun || isRunning) return
+    function handleRun() {
+        if (!canRun || isRunning || !version) return
         const code = editorRef.current?.getValue() ?? ""
-
-        setIsRunning(true)
-        setHasRun(true)
-        try {
-        } finally {
-            setIsRunning(false)
-        }
+        onRun({
+            fileName: fileNameFor(language),
+            code,
+            language,
+            version,
+            args: [],
+        })
     }
 
     return (
@@ -54,7 +60,7 @@ const Editor = () => {
                 <MonacoEditor
                     height="100%"
                     theme="vs-dark"
-                    language={language}
+                    language={toMonacoLanguage(language)}
                     defaultValue={exercise?.starter_code}
                     onMount={handleMount}
                     options={{

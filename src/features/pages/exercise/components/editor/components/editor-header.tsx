@@ -22,7 +22,7 @@ const EditorHeader = ({ language, setLanguage, handleRun, canRun, isRunning }: E
                 size="sm"
                 onClick={handleRun}
                 disabled={!canRun || isRunning}
-                title={canRun ? undefined : "Only JavaScript execution is supported right now"}
+                title={canRun ? undefined : "Loading available runtimes..."}
                 className="gap-1.5"
             >
                 {isRunning ? (

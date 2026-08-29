@@ -1,6 +1,6 @@
 import { getHttpClient } from "@/features/lib/http"
 import { PISTON_ENDPOINTS } from "./endpoints";
-import { PistonLanguageResType } from "./types";
+import { ExecuteProgramReqType, ExecuteProgramResponseBody, ExecuteProgramResType, PistonLanguageResType } from "./types";
 
 const piston = getHttpClient("piston");
 
@@ -19,4 +19,15 @@ export const supportLanguages = async (): Promise<PistonLanguageResType[]> => {
         return [];
     }
 }
-    
+
+export const ExecuteProgram = async (reqbody: ExecuteProgramResponseBody): Promise<ExecuteProgramResType> => {
+    const body: ExecuteProgramReqType = {
+        language: reqbody.language,
+        version: reqbody.version,
+        files: [{ content: reqbody.code }],
+        stdin: reqbody.input ?? "",
+        args: reqbody.args ?? [],
+    }
+    const res = await piston.post(PISTON_ENDPOINTS.EXECUTE_CODE, body)
+    return res.data;
+}
