@@ -23,7 +23,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${geistSans.variable} ${nunito.variable} h-full antialiased`}>
       <Header />
       <body className="min-h-full flex flex-col container">
-        {children}
+        <main className="min-h-screen bg-background px-5 py-8 text-foreground sm:px-8 lg:px-12">
+          {children}
+        </main>
       </body>
     </html>
   );

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { PipelineResult } from "@/features/common/ai-model/pipeline";
-import { saveLatestPipelineResult } from "../utils/pipeline-db";
+import { saveLatestPipelineResult } from "../../../common/db/pipeline-db";
 import { useRouter } from "next/navigation";
 
 
