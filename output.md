@@ -1,101 +1,101 @@
 Step 1 — Concept Extraction
 {
-  "core_concept": "Using React's useEffect hook to handle component side effects, controlled by a dependency array and an optional cleanup return function",
+  "core_concept": "The standard Java for loop: its three-part header (initialization, condition, update) and the order in which those parts execute across iterations",
   "prerequisites": [
-    "React function components and JSX",
-    "Basic React hooks usage (e.g. useState) and the rules of hooks",
-    "JavaScript arrow functions, closures, and array literals",
-    "General idea of side effects vs. pure rendering (data fetching, timers, DOM manipulation)"
+    "Declaring and assigning variables with primitive types (e.g. int)",
+    "Boolean expressions using comparison operators",
+    "Increment/decrement and assignment operators",
+    "Basic Java syntax: statements, blocks, and code placement inside a method"
   ],
-  "language": "JavaScript (React)",
-  "difficulty": "intermediate",
+  "language": "Java",
+  "difficulty": "beginner",
   "multiple_concepts_flag": false,
-  "multiple_concepts_note": "Cleanup functions and the dependency array are presented as sub-parts of the single useEffect concept rather than separate concepts; the class lifecycle methods are mentioned only as an analogy."
+  "multiple_concepts_note": "The heading 'Standard for Loop' hints at other loop variants (e.g. enhanced for-each), but the provided text only explains the standard counted for loop."
 }
 Step 2 — Exercise Generation
 {
-  "title": "CountdownTimer: Effects, Dependencies, and Cleanup",
-  "problem_statement": "Build a React function component `CountdownTimer({ duration, onComplete })` that displays a number of seconds remaining and counts it down to 0, one tick per second. It must (a) reset the displayed count whenever the `duration` prop changes, (b) run exactly one live interval at a time — no stacked or leaked intervals when `duration` changes or the component unmounts, (c) stop ticking at 0 and call `onComplete()` exactly once when it reaches 0, and (d) keep `document.title` in sync with the current remaining seconds (e.g. `\"3s left\"`). Render the remaining seconds as the text content of a `<div data-testid=\"countdown\">`.",
-  "starter_code": "import React, { useState, useEffect } from 'react';\n\nexport default function CountdownTimer({ duration, onComplete }) {\n  const [secondsLeft, setSecondsLeft] = useState(duration);\n\n  // TODO 1: When the `duration` prop changes, reset `secondsLeft` to the new duration.\n\n  // TODO 2: Start a 1-second interval that decrements `secondsLeft`.\n  //         Make sure only one interval is ever active, and that it is\n  //         torn down on unmount / before the effect re-runs.\n  //         It should not keep ticking below 0.\n\n  // TODO 3: Keep document.title in sync with the remaining seconds,\n  //         e.g. `${secondsLeft}s left`.\n\n  // TODO 4: Call onComplete() exactly once when the countdown hits 0.\n\n  return <div data-testid=\"countdown\">{secondsLeft}</div>;\n}\n",
-  "hint": "Each separate concern deserves its own `useEffect` with its own dependency array — ask yourself for each one: \"which values, when changed, should make this effect run again?\" For the interval, remember that a `setInterval` created inside an effect keeps running after that effect's render is gone unless the effect *returns* a teardown function; also consider whether you can update state from the previous value (updater form) so the interval effect doesn't need `secondsLeft` in its dependencies.",
-  "concept_tested": "useEffect for side effects: choosing correct dependency arrays and returning cleanup functions to avoid stale/leaked effects"
+  "title": "Tracing the Three Parts of a for Loop",
+  "problem_statement": "Write a class `LoopTracer` with two static methods that both use a standard three-part Java `for` loop (no `while`, no recursion, no arithmetic shortcuts). `sequence(int start, int end, int step)` must return a String containing every value the loop variable takes while it is still <= end, joined by \", \" (for example start=2, end=9, step=3 gives \"2, 5, 8\"), or an empty String if the body never runs. `conditionChecks(int start, int end, int step)` must return how many times the loop's condition is evaluated for those same values before the loop finishes (count it by driving an actual loop, not by a closed-form formula). Assume `step` is always 1 or greater.",
+  "starter_code": "public class LoopTracer {\n\n    /**\n     * Uses a standard for loop to collect each value of the loop variable\n     * while it satisfies the condition, joined by \", \".\n     * Example: sequence(2, 9, 3) -> \"2, 5, 8\"\n     *          sequence(5, 1, 1) -> \"\"\n     */\n    public static String sequence(int start, int end, int step) {\n        // TODO: implement using a for loop with initialization, condition, and update\n        return \"\";\n    }\n\n    /**\n     * Returns how many times the condition of the equivalent for loop is\n     * evaluated from the moment the loop starts until the loop ends.\n     * Example: conditionChecks(2, 9, 3) -> ?\n     */\n    public static int conditionChecks(int start, int end, int step) {\n        // TODO: implement using a for loop; do not use a formula like (end - start) / step\n        return 0;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(sequence(2, 9, 3));\n        System.out.println(conditionChecks(2, 9, 3));\n    }\n}\n",
+  "hint": "Walk through the header order on paper: initialization happens exactly once, then the condition is tested, then (only if it was true) the body runs, then the update runs, then the condition is tested again. Notice that the very last condition test is the one that fails and stops the loop — so how does the number of condition tests compare to the number of times the body executed?",
+  "concept_tested": "The standard Java for loop's three-part header (initialization, condition, update) and the exact order/frequency in which each part executes across iterations, including the final failing condition check."
 }
 Step 3 — Test Case Generation
 {
-  "test_code": "import React from 'react';\nimport { render, screen, act, cleanup } from '@testing-library/react';\nimport CountdownTimer from './CountdownTimer';\n\nbeforeEach(() => {\n  jest.useFakeTimers();\n  document.title = '';\n});\n\nafterEach(() => {\n  cleanup();\n  jest.clearAllTimers();\n  jest.useRealTimers();\n});\n\nconst advance = (ms) =>\n  act(() => {\n    jest.advanceTimersByTime(ms);\n  });\n\nconst display = () => screen.getByTestId('countdown').textContent;\n\ntest('renders the initial duration before any tick', () => {\n  render(<CountdownTimer duration={5} onComplete={jest.fn()} />);\n  expect(display()).toBe('5');\n});\n\ntest('decrements exactly one second per tick', () => {\n  render(<CountdownTimer duration={5} onComplete={jest.fn()} />);\n\n  advance(1000);\n  expect(display()).toBe('4');\n\n  advance(1000);\n  expect(display()).toBe('3');\n\n  advance(2000);\n  expect(display()).toBe('1');\n});\n\ntest('stops at 0 and calls onComplete exactly once', () => {\n  const onComplete = jest.fn();\n  render(<CountdownTimer duration={2} onComplete={onComplete} />);\n\n  advance(2000);\n  expect(display()).toBe('0');\n  expect(onComplete).toHaveBeenCalledTimes(1);\n\n  advance(5000);\n  expect(display()).toBe('0');\n  expect(onComplete).toHaveBeenCalledTimes(1);\n});\n\ntest('resets the displayed count when the duration prop changes', () => {\n  const { rerender } = render(<CountdownTimer duration={5} onComplete={jest.fn()} />);\n\n  advance(2000);\n  expect(display()).toBe('3');\n\n  rerender(<CountdownTimer duration={10} onComplete={jest.fn()} />);\n  expect(display()).toBe('10');\n});\n\ntest('does not stack intervals when duration changes (still exactly one decrement per second)', () => {\n  const { rerender } = render(<CountdownTimer duration={5} onComplete={jest.fn()} />);\n\n  advance(1000);\n  expect(display()).toBe('4');\n\n  rerender(<CountdownTimer duration={8} onComplete={jest.fn()} />);\n  expect(display()).toBe('8');\n\n  advance(1000);\n  expect(display()).toBe('7');\n\n  rerender(<CountdownTimer duration={4} onComplete={jest.fn()} />);\n  advance(1000);\n  expect(display()).toBe('3');\n\n  expect(jest.getTimerCount()).toBe(1);\n});\n\ntest('clears its interval on unmount', () => {\n  const { unmount } = render(<CountdownTimer duration={5} onComplete={jest.fn()} />);\n\n  advance(1000);\n  expect(jest.getTimerCount()).toBe(1);\n\n  unmount();\n  expect(jest.getTimerCount()).toBe(0);\n});\n\ntest('keeps document.title in sync with remaining seconds', () => {\n  const { rerender } = render(<CountdownTimer duration={3} onComplete={jest.fn()} />);\n  expect(document.title).toBe('3s left');\n\n  advance(1000);\n  expect(document.title).toBe('2s left');\n\n  advance(2000);\n  expect(document.title).toBe('0s left');\n\n  rerender(<CountdownTimer duration={7} onComplete={jest.fn()} />);\n  expect(document.title).toBe('7s left');\n});\n\ntest('never goes negative for a zero duration', () => {\n  render(<CountdownTimer duration={0} onComplete={jest.fn()} />);\n  expect(display()).toBe('0');\n\n  advance(3000);\n  expect(display()).toBe('0');\n  expect(document.title).toBe('0s left');\n});\n",
+  "test_code": "import static org.junit.jupiter.api.Assertions.assertEquals;\n\nimport org.junit.jupiter.api.Test;\n\npublic class LoopTracerTest {\n\n    @Test\n    public void sequenceTypicalStridedLoop() {\n        assertEquals(\"2, 5, 8\", LoopTracer.sequence(2, 9, 3));\n    }\n\n    @Test\n    public void sequenceStepOfOneInclusiveOfEnd() {\n        assertEquals(\"1, 2, 3, 4, 5\", LoopTracer.sequence(1, 5, 1));\n    }\n\n    @Test\n    public void sequenceStopsExactlyOnEndWhenEndIsHit() {\n        assertEquals(\"0, 5, 10\", LoopTracer.sequence(0, 10, 5));\n    }\n\n    @Test\n    public void sequenceEmptyWhenBodyNeverRuns() {\n        assertEquals(\"\", LoopTracer.sequence(5, 1, 1));\n    }\n\n    @Test\n    public void sequenceSingleValueWhenStartEqualsEndAndWhenStepOvershoots() {\n        assertEquals(\"7\", LoopTracer.sequence(7, 7, 1));\n        assertEquals(\"1\", LoopTracer.sequence(1, 10, 100));\n    }\n\n    @Test\n    public void conditionChecksIncludesFinalFailingCheck() {\n        assertEquals(4, LoopTracer.conditionChecks(2, 9, 3));\n        assertEquals(6, LoopTracer.conditionChecks(1, 5, 1));\n        assertEquals(4, LoopTracer.conditionChecks(0, 10, 5));\n    }\n\n    @Test\n    public void conditionCheckedOnceWhenLoopBodyNeverRuns() {\n        assertEquals(1, LoopTracer.conditionChecks(5, 1, 1));\n        assertEquals(1, LoopTracer.conditionChecks(0, -1, 3));\n    }\n\n    @Test\n    public void conditionChecksAndSequenceStayConsistentOnLargerRange() {\n        assertEquals(\"10, 13, 16, 19\", LoopTracer.sequence(10, 20, 3));\n        assertEquals(5, LoopTracer.conditionChecks(10, 20, 3));\n        assertEquals(1001, LoopTracer.conditionChecks(1, 1000, 1));\n    }\n}\n",
   "test_case_notes": [
     {
-      "case": "renders the initial duration before any tick",
-      "checks": "Typical case: initial state is seeded from the duration prop and rendered in the countdown div."
+      "case": "sequence(2, 9, 3) -> \"2, 5, 8\"",
+      "checks": "Typical strided loop: update part applied each pass, values joined with \", \" and no trailing separator."
     },
     {
-      "case": "decrements exactly one second per tick",
-      "checks": "One decrement per 1000ms, so the interval period and update logic are correct."
+      "case": "sequence(1, 5, 1) -> \"1, 2, 3, 4, 5\"",
+      "checks": "Condition is <= end (inclusive), so the end value itself is emitted."
     },
     {
-      "case": "stops at 0 and calls onComplete exactly once",
-      "checks": "Countdown halts at 0 and onComplete fires a single time even after extra time passes (guards against repeated calls on every render/tick)."
+      "case": "sequence(0, 10, 5) -> \"0, 5, 10\"",
+      "checks": "Loop variable landing exactly on end still satisfies the condition and runs the body."
     },
     {
-      "case": "resets the displayed count when the duration prop changes",
-      "checks": "duration is in the effect's dependency array so state resets instead of staying at the stale initial value from useState."
+      "case": "sequence(5, 1, 1) -> \"\"",
+      "checks": "Edge case: condition fails on the first check, so the body never runs and the result is empty."
     },
     {
-      "case": "does not stack intervals when duration changes",
-      "checks": "Fails for a naive effect with no cleanup / wrong deps: leaked intervals would decrement more than once per second and jest.getTimerCount() would exceed 1."
+      "case": "sequence(7, 7, 1) -> \"7\"; sequence(1, 10, 100) -> \"1\"",
+      "checks": "Single-iteration boundaries: start == end, and a step that overshoots end after one pass."
     },
     {
-      "case": "clears its interval on unmount",
-      "checks": "The effect returns a cleanup function that clears the interval, leaving zero pending timers after unmount."
+      "case": "conditionChecks(2, 9, 3) -> 4; (1,5,1) -> 6; (0,10,5) -> 4",
+      "checks": "Fails a naive iteration-count or (end-start)/step+1 formula: the final failing condition check must be counted."
     },
     {
-      "case": "keeps document.title in sync with remaining seconds",
-      "checks": "Side-effect-only effect updates document.title on every count change, including after a duration prop change."
+      "case": "conditionChecks(5, 1, 1) -> 1; conditionChecks(0, -1, 3) -> 1",
+      "checks": "Zero-iteration loops still evaluate the condition exactly once (formula-based answers give 0 or negative)."
     },
     {
-      "case": "never goes negative for a zero duration",
-      "checks": "Edge case: duration 0 renders 0 and the tick logic never produces negative numbers."
+      "case": "sequence(10, 20, 3) with conditionChecks(10, 20, 3) -> 5; conditionChecks(1, 1000, 1) -> 1001",
+      "checks": "Checks count equals emitted-value count + 1 on a larger range, confirming a real loop drives both methods."
     }
   ]
 }
 Step 4 — Self-Verification
 {
-  "solution_code": "import React, { useState, useEffect, useRef } from 'react';\n\nexport default function CountdownTimer({ duration, onComplete }) {\n  const [secondsLeft, setSecondsLeft] = useState(duration);\n  const completedRef = useRef(false);\n  const onCompleteRef = useRef(onComplete);\n\n  // Keep the latest callback in a ref so it is NOT an effect dependency\n  // (parents in the tests pass a fresh jest.fn() on every render).\n  useEffect(() => {\n    onCompleteRef.current = onComplete;\n  });\n\n  // (a) Reset the displayed count whenever `duration` changes.\n  useEffect(() => {\n    setSecondsLeft(duration);\n    completedRef.current = false;\n  }, [duration]);\n\n  // (b) Exactly one live interval; cleaned up before re-run and on unmount.\n  //     Depending on `secondsLeft` means the effect also stops itself at 0.\n  useEffect(() => {\n    if (secondsLeft <= 0) return undefined;\n    const id = setInterval(() => {\n      setSecondsLeft((s) => Math.max(0, s - 1));\n    }, 1000);\n    return () => clearInterval(id);\n  }, [secondsLeft]);\n\n  // (d) Keep document.title in sync.\n  useEffect(() => {\n    document.title = `${secondsLeft}s left`;\n  }, [secondsLeft]);\n\n  // (c) Call onComplete exactly once when we hit 0.\n  useEffect(() => {\n    if (secondsLeft === 0 && !completedRef.current) {\n      completedRef.current = true;\n      if (onCompleteRef.current) onCompleteRef.current();\n    }\n  }, [secondsLeft]);\n\n  return <div data-testid=\"countdown\">{secondsLeft}</div>;\n}\n",
+  "solution_code": "public class LoopTracer {\n\n    public static String sequence(int start, int end, int step) {\n        StringBuilder sb = new StringBuilder();\n        for (int i = start; i <= end; i += step) {\n            if (sb.length() > 0) {\n                sb.append(\", \");\n            }\n            sb.append(i);\n        }\n        return sb.toString();\n    }\n\n    public static int conditionChecks(int start, int end, int step) {\n        int checks = 0;\n        // The condition is evaluated once per successful iteration...\n        for (int i = start; i <= end; i += step) {\n            checks++;\n        }\n        // ...plus one final failing evaluation that terminates the loop.\n        return checks + 1;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(sequence(2, 9, 3));\n        System.out.println(conditionChecks(2, 9, 3));\n    }\n}\n",
   "test_results": [
     {
-      "case": "renders the initial duration before any tick",
+      "case": "sequenceTypicalStridedLoop: sequence(2,9,3) -> \"2, 5, 8\"",
       "pass": true
     },
     {
-      "case": "decrements exactly one second per tick",
+      "case": "sequenceStepOfOneInclusiveOfEnd: sequence(1,5,1) -> \"1, 2, 3, 4, 5\"",
       "pass": true
     },
     {
-      "case": "stops at 0 and calls onComplete exactly once",
+      "case": "sequenceStopsExactlyOnEndWhenEndIsHit: sequence(0,10,5) -> \"0, 5, 10\"",
       "pass": true
     },
     {
-      "case": "resets the displayed count when the duration prop changes",
+      "case": "sequenceEmptyWhenBodyNeverRuns: sequence(5,1,1) -> \"\"",
       "pass": true
     },
     {
-      "case": "does not stack intervals when duration changes (still exactly one decrement per second)",
+      "case": "sequenceSingleValueWhenStartEqualsEndAndWhenStepOvershoots: sequence(7,7,1) -> \"7\", sequence(1,10,100) -> \"1\"",
       "pass": true
     },
     {
-      "case": "clears its interval on unmount",
+      "case": "conditionChecksIncludesFinalFailingCheck: (2,9,3)->4, (1,5,1)->6, (0,10,5)->4",
       "pass": true
     },
     {
-      "case": "keeps document.title in sync with remaining seconds",
+      "case": "conditionCheckedOnceWhenLoopBodyNeverRuns: (5,1,1)->1, (0,-1,3)->1",
       "pass": true
     },
     {
-      "case": "never goes negative for a zero duration",
+      "case": "conditionChecksAndSequenceStayConsistentOnLargerRange: sequence(10,20,3)->\"10, 13, 16, 19\", conditionChecks(10,20,3)->5, conditionChecks(1,1000,1)->1001",
       "pass": true
     }
   ],
   "all_passed": true,
-  "concept_bypassable": false,
-  "notes": "Solvable as written; my reference solution satisfies all 8 cases. Reasoning on the trickier ones: (1) `render`/`rerender`/`unmount` from RTL are act-wrapped, so the [duration] reset effect flushes and re-renders synchronously — hence '10' / '8' / '7s left' appear immediately after rerender without advancing timers. (2) During `advance(2000)` the interval callback fires twice (state flushes are deferred to act exit, or the effect re-installs the interval at the same fake-time offset), so 3 -> 1 and 2 -> 0 both hold regardless of flush timing. (3) getTimerCount()===1 holds because the [secondsLeft] effect always clears the previous interval before installing a new one; after reaching 0 no interval is installed, and after unmount cleanup leaves 0.\n\nDesign notes / minor risks (not failures):\n- The two getTimerCount() assertions are environment-sensitive: if React's scheduler ever falls back to setTimeout instead of MessageChannel under jsdom + fake timers, an extra fake timer could be counted and these would fail for ANY correct solution. In standard jsdom (MessageChannel present) this is fine.\n- Ambiguity worth noting for the learner: with duration={0} the statement's 'call onComplete when it reaches 0' implies an immediate call on mount. No test asserts this either way, so both interpretations pass.\n- Another ambiguity: a naive solution that puts `onComplete` in the effect dependency array will call it more than once on a rerender (tests pass fresh jest.fn()s), but no test catches that specific bug — the 'exactly once' test never rerenders. Consider adding a rerender-after-completion assertion on the same onComplete mock to harden it.\n- Concept is genuinely required: passing (b) and the unmount test forces a cleanup function, and (a) plus the no-stacking test forces correct dependency arrays. There is no realistic non-useEffect path in a function component here."
+  "concept_bypassable": true,
+  "notes": "Exercise is solvable and self-consistent; every assertion passes with the reference solution above. Semantics are unambiguous: the loop variable values are the ones satisfying i <= end, and the condition-check count is iterations + 1 (the final failing check), which the tests confirm consistently (e.g. 3 values -> 4 checks, 0 values -> 1 check, 1000 values -> 1001 checks). Warnings: (1) The tests only observe return values, so a learner could bypass the for-loop concept entirely with a while loop, recursion, or a closed-form formula such as ((end - start) / step) + 2 (clamped at 1 when start > end) and still pass all cases; the 'must use a for loop / no formula' constraint is only enforced by the prose, not by any test. This is a mild design leak but arguably acceptable for a tracing/understanding exercise. (2) Minor edge-case fragility not covered by the tests: very large end values near Integer.MAX_VALUE would make i += step overflow and loop forever; the tests never exercise this, so it does not affect validity. (3) The starter code's Javadoc for conditionChecks leaves the example answer as '?', which is intentional (the learner must reason it out) and the test file pins it to 4, so there is no contradiction."
 }
