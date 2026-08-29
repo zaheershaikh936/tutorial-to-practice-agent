@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Nunito } from "next/font/google";
 import "./globals.css";
+import { Header } from "@/features/provider/header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,11 +20,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${nunito.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en" className={`${geistSans.variable} ${nunito.variable} h-full antialiased`}>
+      <Header />
+      <body className="min-h-full flex flex-col container">
+        {children}
+      </body>
     </html>
   );
 }
