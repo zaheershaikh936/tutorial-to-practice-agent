@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createHttpClient } from "@/features/lib/http/create-client";
+import { createHttpClient, HttpRequestError } from "@/features/lib/http/create-client";
 
 /** Reaches the response interceptor's rejection handler directly, without a real network call. */
 function getResponseErrorInterceptor(client: ReturnType<typeof createHttpClient>) {
@@ -26,13 +26,13 @@ describe("createHttpClient", () => {
         expect(client.defaults.timeout).toBe(5000);
     });
 
-    it("normalizes an axios error's response.data.message into a plain Error", async () => {
+    it("normalizes an axios error's response.data.message into an HttpRequestError", async () => {
         const client = createHttpClient("https://example.com");
         const rejected = getResponseErrorInterceptor(client);
 
         const axiosError = Object.assign(new Error("Request failed with status code 500"), {
             isAxiosError: true,
-            response: { data: { message: "upstream service unavailable" } },
+            response: { status: 500, data: { message: "upstream service unavailable" } },
         });
 
         await expect(rejected(axiosError)).rejects.toThrow("upstream service unavailable");
@@ -45,6 +45,39 @@ describe("createHttpClient", () => {
         const axiosError = Object.assign(new Error("Network Error"), { isAxiosError: true });
 
         await expect(rejected(axiosError)).rejects.toThrow("Network Error");
+    });
+
+    it("preserves the response status code on the thrown HttpRequestError", async () => {
+        const client = createHttpClient("https://example.com");
+        const rejected = getResponseErrorInterceptor(client);
+
+        const axiosError = Object.assign(new Error("Request failed with status code 403"), {
+            isAxiosError: true,
+            response: { status: 403, data: "Forbidden" },
+        });
+
+        try {
+            await rejected(axiosError);
+            expect.unreachable("expected rejected() to throw");
+        } catch (error) {
+            expect(error).toBeInstanceOf(HttpRequestError);
+            expect((error as HttpRequestError).status).toBe(403);
+        }
+    });
+
+    it("leaves status undefined for a network error with no response", async () => {
+        const client = createHttpClient("https://example.com");
+        const rejected = getResponseErrorInterceptor(client);
+
+        const axiosError = Object.assign(new Error("Network Error"), { isAxiosError: true });
+
+        try {
+            await rejected(axiosError);
+            expect.unreachable("expected rejected() to throw");
+        } catch (error) {
+            expect(error).toBeInstanceOf(HttpRequestError);
+            expect((error as HttpRequestError).status).toBeUndefined();
+        }
     });
 
     it("passes non-axios errors through unchanged", async () => {

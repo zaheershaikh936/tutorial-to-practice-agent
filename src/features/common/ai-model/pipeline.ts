@@ -1,6 +1,6 @@
-import { z } from "zod";
 import { AiModel } from "./base";
 import { getAiModel } from "./index";
+import { parseModelJson } from "./json-response";
 import {
   CONCEPT_EXTRACTION_SYSTEM_PROMPT,
   EXERCISE_GENERATION_SYSTEM_PROMPT,
@@ -22,31 +22,6 @@ export interface PipelineResult {
   exercise: ExerciseGenerationResult;
   testCases: TestCaseGenerationResult;
   verification: SelfVerificationResult;
-}
-
-/**
- * Strips a ```json ... ``` fence if the model wrapped its output in one,
- * parses it, then validates the shape against `schema`. Every step prompt
- * demands strict JSON, but models sometimes fence it, omit a field, or
- * return the wrong type for one - this turns that into a clear error
- * instead of an `undefined` bug surfacing downstream.
- */
-function parseJson<T>(raw: string, schema: z.ZodType<T>, stepName: string): T {
-  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-  const jsonText = fenced ? fenced[1] : raw;
-
-  let data: unknown;
-  try {
-    data = JSON.parse(jsonText);
-  } catch {
-    throw new Error(`${stepName} returned invalid JSON: ${raw.slice(0, 200)}`);
-  }
-
-  const result = schema.safeParse(data);
-  if (!result.success) {
-    throw new Error(`${stepName} returned data that doesn't match the expected shape: ${result.error.message}`);
-  }
-  return result.data;
 }
 
 /**
@@ -82,14 +57,14 @@ export async function runPipeline(
   assertValidTranscript(transcript);
 
   const conceptRaw = await model.generate(transcript, CONCEPT_EXTRACTION_SYSTEM_PROMPT);
-  const conceptResponse = parseJson(conceptRaw, ConceptExtractionResponseSchema, "Concept extraction");
+  const conceptResponse = parseModelJson(conceptRaw, ConceptExtractionResponseSchema, "Concept extraction");
   if (isConceptExtractionError(conceptResponse)) {
     throw new Error(`Concept extraction failed: ${conceptResponse.reason}`);
   }
   const concept = conceptResponse;
 
   const exerciseRaw = await model.generate(JSON.stringify(concept), EXERCISE_GENERATION_SYSTEM_PROMPT);
-  const exercise = parseJson(exerciseRaw, ExerciseGenerationResultSchema, "Exercise generation");
+  const exercise = parseModelJson(exerciseRaw, ExerciseGenerationResultSchema, "Exercise generation");
 
   const testCasesRaw = await model.generate(
     JSON.stringify({
@@ -99,7 +74,7 @@ export async function runPipeline(
     }),
     TEST_CASE_GENERATION_SYSTEM_PROMPT,
   );
-  const testCases = parseJson(testCasesRaw, TestCaseGenerationResultSchema, "Test case generation");
+  const testCases = parseModelJson(testCasesRaw, TestCaseGenerationResultSchema, "Test case generation");
 
   const verificationRaw = await model.generate(
     JSON.stringify({
@@ -110,7 +85,7 @@ export async function runPipeline(
     }),
     SELF_VERIFICATION_SYSTEM_PROMPT,
   );
-  const verification = parseJson(verificationRaw, SelfVerificationResultSchema, "Self-verification");
+  const verification = parseModelJson(verificationRaw, SelfVerificationResultSchema, "Self-verification");
 
   if (!verification.all_passed) {
     const failedCases = verification.test_results.filter((t) => !t.pass).map((t) => t.case);

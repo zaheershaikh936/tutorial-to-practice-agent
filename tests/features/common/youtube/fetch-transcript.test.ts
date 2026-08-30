@@ -1,12 +1,18 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import { HttpRequestError } from "@/features/lib/http";
 
 const { getMock } = vi.hoisted(() => ({ getMock: vi.fn() }));
 
-vi.mock("@/features/lib/http", () => ({
-    getHttpClient: () => ({ get: getMock }),
-}));
+vi.mock("@/features/lib/http", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@/features/lib/http")>();
+    return { ...actual, getHttpClient: () => ({ get: getMock }) };
+});
 
-import { parseYoutubeTranscript, fetchYoutubeTranscript } from "@/features/common/youtube/fetch-transcript";
+import {
+    parseYoutubeTranscript,
+    fetchYoutubeTranscript,
+    YoutubeTranscriptError,
+} from "@/features/common/youtube/fetch-transcript";
 
 const SAMPLE_TRANSCRIPT = `# Transcript: Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)
 
@@ -74,5 +80,76 @@ describe("fetchYoutubeTranscript", () => {
         expect(getMock).toHaveBeenCalledWith("/transcript/dQw4w9WgXcQ.txt", { responseType: "text" });
         expect(result.title).toBe("Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)");
         expect(result.wordCount).toBe(481);
+    });
+
+    it("turns a 403 into an actionable message instead of 'Request failed with status code 403'", async () => {
+        getMock.mockRejectedValue(new HttpRequestError("Request failed with status code 403", 403));
+
+        await expect(fetchYoutubeTranscript("dQw4w9WgXcQ")).rejects.toThrow(
+            /blocked this request.*rate-limiting|restricting automated access/i,
+        );
+    });
+
+    it("maps a 403/401 to a YoutubeTranscriptError with a 502 status", async () => {
+        getMock.mockRejectedValue(new HttpRequestError("Request failed with status code 403", 403));
+
+        try {
+            await fetchYoutubeTranscript("dQw4w9WgXcQ");
+            expect.unreachable("expected fetchYoutubeTranscript to throw");
+        } catch (error) {
+            expect(error).toBeInstanceOf(YoutubeTranscriptError);
+            expect((error as YoutubeTranscriptError).status).toBe(502);
+        }
+    });
+
+    it("maps a 404 to 'no transcript found' with a 404 status", async () => {
+        getMock.mockRejectedValue(new HttpRequestError("Request failed with status code 404", 404));
+
+        try {
+            await fetchYoutubeTranscript("dQw4w9WgXcQ");
+            expect.unreachable("expected fetchYoutubeTranscript to throw");
+        } catch (error) {
+            expect(error).toBeInstanceOf(YoutubeTranscriptError);
+            expect((error as YoutubeTranscriptError).status).toBe(404);
+            expect((error as Error).message).toMatch(/no transcript could be found/i);
+        }
+    });
+
+    it("maps a 429 to a rate-limit message with a 429 status", async () => {
+        getMock.mockRejectedValue(new HttpRequestError("Request failed with status code 429", 429));
+
+        try {
+            await fetchYoutubeTranscript("dQw4w9WgXcQ");
+            expect.unreachable("expected fetchYoutubeTranscript to throw");
+        } catch (error) {
+            expect(error).toBeInstanceOf(YoutubeTranscriptError);
+            expect((error as YoutubeTranscriptError).status).toBe(429);
+            expect((error as Error).message).toMatch(/rate-limiting requests/i);
+        }
+    });
+
+    it("maps a 5xx to a temporarily-unavailable message with a 502 status", async () => {
+        getMock.mockRejectedValue(new HttpRequestError("Request failed with status code 503", 503));
+
+        try {
+            await fetchYoutubeTranscript("dQw4w9WgXcQ");
+            expect.unreachable("expected fetchYoutubeTranscript to throw");
+        } catch (error) {
+            expect(error).toBeInstanceOf(YoutubeTranscriptError);
+            expect((error as YoutubeTranscriptError).status).toBe(502);
+            expect((error as Error).message).toMatch(/temporarily unavailable/i);
+        }
+    });
+
+    it("maps a network failure with no status to a generic unreachable message", async () => {
+        getMock.mockRejectedValue(new HttpRequestError("Network Error"));
+
+        try {
+            await fetchYoutubeTranscript("dQw4w9WgXcQ");
+            expect.unreachable("expected fetchYoutubeTranscript to throw");
+        } catch (error) {
+            expect(error).toBeInstanceOf(YoutubeTranscriptError);
+            expect((error as Error).message).toMatch(/could not (reach|fetch)/i);
+        }
     });
 });
