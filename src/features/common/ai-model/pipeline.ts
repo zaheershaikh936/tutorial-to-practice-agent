@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { AiModel } from "./base";
 import { getAiModel } from "./index";
 import {
@@ -6,8 +7,11 @@ import {
   TEST_CASE_GENERATION_SYSTEM_PROMPT,
   SELF_VERIFICATION_SYSTEM_PROMPT,
   isConceptExtractionError,
+  ConceptExtractionResponseSchema,
+  ExerciseGenerationResultSchema,
+  TestCaseGenerationResultSchema,
+  SelfVerificationResultSchema,
   type ConceptExtractionResult,
-  type ConceptExtractionResponse,
   type ExerciseGenerationResult,
   type TestCaseGenerationResult,
   type SelfVerificationResult,
@@ -22,34 +26,70 @@ export interface PipelineResult {
 
 /**
  * Strips a ```json ... ``` fence if the model wrapped its output in one,
- * then parses. Every step prompt demands strict JSON, but models sometimes
- * fence it anyway.
+ * parses it, then validates the shape against `schema`. Every step prompt
+ * demands strict JSON, but models sometimes fence it, omit a field, or
+ * return the wrong type for one - this turns that into a clear error
+ * instead of an `undefined` bug surfacing downstream.
  */
-function parseJson<T>(raw: string): T {
+function parseJson<T>(raw: string, schema: z.ZodType<T>, stepName: string): T {
   const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
   const jsonText = fenced ? fenced[1] : raw;
-  return JSON.parse(jsonText) as T;
+
+  let data: unknown;
+  try {
+    data = JSON.parse(jsonText);
+  } catch {
+    throw new Error(`${stepName} returned invalid JSON: ${raw.slice(0, 200)}`);
+  }
+
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    throw new Error(`${stepName} returned data that doesn't match the expected shape: ${result.error.message}`);
+  }
+  return result.data;
+}
+
+/**
+ * Below this word count, input is a one-off question ("what is a closure?")
+ * rather than tutorial content - reject it before spending an API call on it.
+ */
+const MIN_TRANSCRIPT_WORD_COUNT = 30;
+
+function assertValidTranscript(transcript: string): void {
+  const wordCount = transcript.trim().split(/\s+/).filter(Boolean).length;
+  if (wordCount < MIN_TRANSCRIPT_WORD_COUNT) {
+    throw new Error(
+      `Input is too short (${wordCount} word${wordCount === 1 ? "" : "s"}) to be a tutorial transcript. Paste the full transcript or article text, not a single question or sentence.`,
+    );
+  }
 }
 
 /**
  * Runs the four-step agent pipeline end-to-end, each step's output feeding
  * the next: concept-extraction -> exercise-generation -> test-case-generation
- * -> self-verification. Throws if any step returns unparsable output or if
- * concept-extraction reports insufficient_content.
+ * -> self-verification. Throws if the input is too short to be real
+ * tutorial content, if any step returns unparsable or malformed output, if
+ * concept-extraction reports insufficient_content, or if self-verification
+ * reports that the exercise fails its own test cases - a bad exercise
+ * should never reach the learner silently. A merely bypassable concept
+ * (tests pass but the exercise doesn't require the target concept) is
+ * logged as a warning rather than thrown, per the self-verification prompt.
  */
 export async function runPipeline(
   transcript: string,
   model: AiModel = getAiModel(),
 ): Promise<PipelineResult> {
+  assertValidTranscript(transcript);
+
   const conceptRaw = await model.generate(transcript, CONCEPT_EXTRACTION_SYSTEM_PROMPT);
-  const conceptResponse = parseJson<ConceptExtractionResponse>(conceptRaw);
+  const conceptResponse = parseJson(conceptRaw, ConceptExtractionResponseSchema, "Concept extraction");
   if (isConceptExtractionError(conceptResponse)) {
     throw new Error(`Concept extraction failed: ${conceptResponse.reason}`);
   }
   const concept = conceptResponse;
 
   const exerciseRaw = await model.generate(JSON.stringify(concept), EXERCISE_GENERATION_SYSTEM_PROMPT);
-  const exercise = parseJson<ExerciseGenerationResult>(exerciseRaw);
+  const exercise = parseJson(exerciseRaw, ExerciseGenerationResultSchema, "Exercise generation");
 
   const testCasesRaw = await model.generate(
     JSON.stringify({
@@ -59,7 +99,7 @@ export async function runPipeline(
     }),
     TEST_CASE_GENERATION_SYSTEM_PROMPT,
   );
-  const testCases = parseJson<TestCaseGenerationResult>(testCasesRaw);
+  const testCases = parseJson(testCasesRaw, TestCaseGenerationResultSchema, "Test case generation");
 
   const verificationRaw = await model.generate(
     JSON.stringify({
@@ -70,7 +110,23 @@ export async function runPipeline(
     }),
     SELF_VERIFICATION_SYSTEM_PROMPT,
   );
-  const verification = parseJson<SelfVerificationResult>(verificationRaw);
+  const verification = parseJson(verificationRaw, SelfVerificationResultSchema, "Self-verification");
+
+  if (!verification.all_passed) {
+    const failedCases = verification.test_results.filter((t) => !t.pass).map((t) => t.case);
+    throw new Error(
+      `Self-verification failed: the generated exercise did not pass its own test cases` +
+        (failedCases.length ? ` (${failedCases.join(", ")})` : "") +
+        (verification.notes ? ` - ${verification.notes}` : ""),
+    );
+  }
+
+  if (verification.concept_bypassable) {
+    console.warn(
+      `Self-verification warning: exercise may be solvable without using "${exercise.concept_tested}".` +
+        (verification.notes ? ` ${verification.notes}` : ""),
+    );
+  }
 
   return { concept, exercise, testCases, verification };
 }

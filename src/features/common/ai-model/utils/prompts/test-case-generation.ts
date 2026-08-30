@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 /**
  * Model-agnostic system prompt - pass as `system` to whichever AiModel
  * implementation (Claude, or any future provider) is in use.
@@ -23,12 +25,16 @@ Output strictly as JSON:
   ]
 }`;
 
-export interface TestCaseNote {
-  case: string;
-  checks: string;
-}
+export const TestCaseNoteSchema = z.object({
+  case: z.string().min(1),
+  checks: z.string().min(1),
+});
 
-export interface TestCaseGenerationResult {
-  test_code: string;
-  test_case_notes: TestCaseNote[];
-}
+export type TestCaseNote = z.infer<typeof TestCaseNoteSchema>;
+
+export const TestCaseGenerationResultSchema = z.object({
+  test_code: z.string().min(1),
+  test_case_notes: z.array(TestCaseNoteSchema).min(1),
+});
+
+export type TestCaseGenerationResult = z.infer<typeof TestCaseGenerationResultSchema>;

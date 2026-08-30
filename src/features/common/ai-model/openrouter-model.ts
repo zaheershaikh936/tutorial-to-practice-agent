@@ -1,5 +1,6 @@
 import { OpenRouter } from "@openrouter/sdk";
 import { AiModel } from "./base";
+import { withRetry } from "./retry";
 
 /**
  * Shared base for any AiModel backed by OpenRouter - subclasses just supply
@@ -16,7 +17,16 @@ export abstract class OpenRouterModel extends AiModel {
     this.client = new OpenRouter({ apiKey });
   }
 
+  /**
+   * Retries transient failures (network errors, timeouts, rate limits,
+   * provider-side 5xx) with backoff - see ./retry. Re-running `send` from
+   * scratch on retry is safe since it's just re-sending the same message.
+   */
   public async generate(message: string, system?: string): Promise<string> {
+    return withRetry(() => this.send(message, system));
+  }
+
+  private async send(message: string, system?: string): Promise<string> {
     const response = await this.client.chat.send({
       chatRequest: {
         model: this.model,

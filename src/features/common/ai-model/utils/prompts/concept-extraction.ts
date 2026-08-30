@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 /**
  * Model-agnostic system prompt - pass as `system` to whichever AiModel
  * implementation (Claude, or any future provider) is in use.
@@ -26,23 +28,34 @@ Output strictly as JSON, no extra commentary:
 If the input text is too short, too vague, or not actually about a software engineering concept, output:
 {"error": "insufficient_content", "reason": "<why>"}`;
 
-export type ConceptDifficulty = "beginner" | "intermediate" | "advanced";
+export const ConceptDifficultySchema = z.enum(["beginner", "intermediate", "advanced"]);
 
-export interface ConceptExtractionResult {
-  core_concept: string;
-  prerequisites: string[];
-  language: string;
-  difficulty: ConceptDifficulty;
-  multiple_concepts_flag: boolean;
-  multiple_concepts_note: string;
-}
+export type ConceptDifficulty = z.infer<typeof ConceptDifficultySchema>;
 
-export interface ConceptExtractionError {
-  error: "insufficient_content";
-  reason: string;
-}
+export const ConceptExtractionResultSchema = z.object({
+  core_concept: z.string().min(1),
+  prerequisites: z.array(z.string()),
+  language: z.string().min(1),
+  difficulty: ConceptDifficultySchema,
+  multiple_concepts_flag: z.boolean(),
+  multiple_concepts_note: z.string(),
+});
 
-export type ConceptExtractionResponse = ConceptExtractionResult | ConceptExtractionError;
+export type ConceptExtractionResult = z.infer<typeof ConceptExtractionResultSchema>;
+
+export const ConceptExtractionErrorSchema = z.object({
+  error: z.literal("insufficient_content"),
+  reason: z.string(),
+});
+
+export type ConceptExtractionError = z.infer<typeof ConceptExtractionErrorSchema>;
+
+export const ConceptExtractionResponseSchema = z.union([
+  ConceptExtractionResultSchema,
+  ConceptExtractionErrorSchema,
+]);
+
+export type ConceptExtractionResponse = z.infer<typeof ConceptExtractionResponseSchema>;
 
 export function isConceptExtractionError(
   response: ConceptExtractionResponse,

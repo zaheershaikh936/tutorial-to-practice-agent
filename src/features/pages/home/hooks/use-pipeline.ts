@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { PipelineResult } from "@/features/common/ai-model/pipeline";
 import { saveLatestPipelineResult } from "../../../common/db/pipeline-db";
 import { useRouter } from "next/navigation";
-
+import { pipelineInputSchema } from "./validation";
 
 export function usePipeline() {
   const router = useRouter();
@@ -35,7 +35,8 @@ export function usePipeline() {
   }
 
   async function runPipeline() {
-    if (!transcript.trim() || isRunning) return;
+    const validationResult = pipelineInputSchema.safeParse({ message: transcript });
+    if (!validationResult.success || isRunning) return;
     setIsRunning(true);
     setError(null);
     setResult(null);

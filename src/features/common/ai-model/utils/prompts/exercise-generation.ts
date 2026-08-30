@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 /**
  * Model-agnostic system prompt - pass as `system` to whichever AiModel
  * implementation (Claude, or any future provider) is in use.
@@ -31,10 +33,12 @@ Output strictly as JSON:
 
 Do not solve the exercise yourself in this step. Do not include test cases — that happens in a later step.`;
 
-export interface ExerciseGenerationResult {
-  title: string;
-  problem_statement: string;
-  starter_code: string;
-  hint: string;
-  concept_tested: string;
-}
+export const ExerciseGenerationResultSchema = z.object({
+  title: z.string().min(1),
+  problem_statement: z.string().min(1),
+  starter_code: z.string().min(1),
+  hint: z.string().min(1),
+  concept_tested: z.string().min(1),
+});
+
+export type ExerciseGenerationResult = z.infer<typeof ExerciseGenerationResultSchema>;

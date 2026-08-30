@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 /**
  * Model-agnostic system prompt - pass as `system` to whichever AiModel
  * implementation (Claude, or any future provider) is in use.
@@ -29,15 +31,19 @@ Output strictly as JSON:
 
 If all_passed is false, this exercise should NOT be shown to the learner as-is — it needs another iteration.`;
 
-export interface SelfVerificationTestResult {
-  case: string;
-  pass: boolean;
-}
+export const SelfVerificationTestResultSchema = z.object({
+  case: z.string().min(1),
+  pass: z.boolean(),
+});
 
-export interface SelfVerificationResult {
-  solution_code: string;
-  test_results: SelfVerificationTestResult[];
-  all_passed: boolean;
-  concept_bypassable: boolean;
-  notes: string;
-}
+export type SelfVerificationTestResult = z.infer<typeof SelfVerificationTestResultSchema>;
+
+export const SelfVerificationResultSchema = z.object({
+  solution_code: z.string().min(1),
+  test_results: z.array(SelfVerificationTestResultSchema),
+  all_passed: z.boolean(),
+  concept_bypassable: z.boolean(),
+  notes: z.string(),
+});
+
+export type SelfVerificationResult = z.infer<typeof SelfVerificationResultSchema>;
