@@ -1,0 +1,160 @@
+{
+  "timestamp": "2026-08-30T15:38:23.036Z",
+  "project": {
+    "name": "tutorial-to-practice-agent",
+    "version": "0.1.0",
+    "evaluatedBranch": "fect/advance",
+    "baselineBranch": "feat/baseline-pipeline"
+  },
+  "configuration": {
+    "provider": "claude",
+    "model": "anthropic/claude-opus-5",
+    "testCaseCount": 2
+  },
+  "testCases": [
+    {
+      "id": "normal-js-two-pointer",
+      "category": "normal",
+      "input": "In this tutorial we're going to walk through the two-pointer technique for solving array problems in JavaScript. The idea is simple: instead of using nested loops which cost you O(n squared) time, you place one pointer at the start of a sorted array and another at the end. On each step you look at the sum of the two values. If the sum is too small, you move the left pointer forward to increase it. If the sum is too large, you move the right pointer backward to decrease it. You keep narrowing the window until the pointers meet or you find the target pair. This turns an O(n squared) brute force search into a single O(n) pass, which matters a lot once your input arrays get large.",
+      "notes": "Single, well-scoped concept in a common language. Baseline should complete cleanly here too."
+    },
+    {
+      "id": "edge-just-under-boundary",
+      "category": "edge",
+      "input": "Bubble sort repeatedly steps through a list comparing each pair of adjacent elements and swapping them if they are in the wrong order until the whole array ends sorted.",
+      "notes": "29 words, just under the 30-word minimum. Advanced should reject this before making any API call (assertValidTranscript). Baseline has no such gate and will spend a real API call on it - a genuine, measurable robustness/efficiency difference, not a fabricated one."
+    }
+  ],
+  "baseline": {
+    "metrics": {
+      "totalCases": 2,
+      "completed": 2,
+      "threw": 0,
+      "successRate": 1,
+      "verifiedCount": 2,
+      "verifiedSuccessRate": 1,
+      "averageLatencyMs": 93429.9189165,
+      "p95LatencyMs": 110272.60749999998,
+      "totalExternalCalls": 8,
+      "averageExternalCallsPerCase": 4,
+      "totalRetries": 0,
+      "successfulRecoveriesAfterRetry": 0,
+      "preflightRejections": 0,
+      "schemaValidationFailures": 0,
+      "insufficientContentReports": 0,
+      "verificationFailuresCaught": 0,
+      "otherErrors": 0,
+      "errorsByKind": {
+        "preflight_rejected": 0,
+        "invalid_json": 0,
+        "schema_validation_failed": 0,
+        "insufficient_content": 0,
+        "verification_failed": 0,
+        "other_error": 0,
+        "none": 2
+      }
+    },
+    "runs": [
+      {
+        "caseId": "normal-js-two-pointer",
+        "category": "normal",
+        "implementation": "baseline",
+        "ranWithoutThrowing": true,
+        "errorKind": "none",
+        "errorMessage": null,
+        "verificationAllPassed": true,
+        "conceptBypassable": true,
+        "durationMs": 76587.230333,
+        "externalCalls": 4,
+        "pipelineStepCalls": 4,
+        "retries": 0
+      },
+      {
+        "caseId": "edge-just-under-boundary",
+        "category": "edge",
+        "implementation": "baseline",
+        "ranWithoutThrowing": true,
+        "errorKind": "none",
+        "errorMessage": null,
+        "verificationAllPassed": true,
+        "conceptBypassable": false,
+        "durationMs": 110272.60749999998,
+        "externalCalls": 4,
+        "pipelineStepCalls": 4,
+        "retries": 0
+      }
+    ]
+  },
+  "advanced": {
+    "metrics": {
+      "totalCases": 2,
+      "completed": 1,
+      "threw": 1,
+      "successRate": 0.5,
+      "verifiedCount": 1,
+      "verifiedSuccessRate": 0.5,
+      "averageLatencyMs": 47092.70912549999,
+      "p95LatencyMs": 94184.45479199999,
+      "totalExternalCalls": 4,
+      "averageExternalCallsPerCase": 2,
+      "totalRetries": 0,
+      "successfulRecoveriesAfterRetry": 0,
+      "preflightRejections": 1,
+      "schemaValidationFailures": 0,
+      "insufficientContentReports": 0,
+      "verificationFailuresCaught": 0,
+      "otherErrors": 0,
+      "errorsByKind": {
+        "preflight_rejected": 1,
+        "invalid_json": 0,
+        "schema_validation_failed": 0,
+        "insufficient_content": 0,
+        "verification_failed": 0,
+        "other_error": 0,
+        "none": 1
+      }
+    },
+    "runs": [
+      {
+        "caseId": "normal-js-two-pointer",
+        "category": "normal",
+        "implementation": "advanced",
+        "ranWithoutThrowing": true,
+        "errorKind": "none",
+        "errorMessage": null,
+        "verificationAllPassed": true,
+        "conceptBypassable": true,
+        "durationMs": 94184.45479199999,
+        "externalCalls": 4,
+        "pipelineStepCalls": 4,
+        "retries": 0
+      },
+      {
+        "caseId": "edge-just-under-boundary",
+        "category": "edge",
+        "implementation": "advanced",
+        "ranWithoutThrowing": false,
+        "errorKind": "preflight_rejected",
+        "errorMessage": "Input is too short (29 words) to be a tutorial transcript. Paste the full transcript or article text, not a single question or sentence.",
+        "verificationAllPassed": null,
+        "conceptBypassable": null,
+        "durationMs": 0.9634589999914169,
+        "externalCalls": 0,
+        "pipelineStepCalls": 0,
+        "retries": 0
+      }
+    ]
+  },
+  "improvement": {
+    "successRateDeltaPercentagePoints": -50,
+    "verifiedSuccessRateDeltaPercentagePoints": -50,
+    "averageLatencyDeltaMs": -46337.20979100001,
+    "externalCallDeltaTotal": -4
+  },
+  "notes": [
+    "No request/response caching exists in either implementation (verified by inspection); cache hit/miss metrics are intentionally omitted rather than fabricated.",
+    "Neither branch sets a temperature or seed on the model call, so outputs are not deterministic between runs; latency, call counts, and schema/verification outcomes are the reliable signals here, not exact reproducibility of generated exercise text.",
+    "'Verified success rate' means the run completed AND the pipeline's own self-verification step reported all_passed=true - it is a proxy for exercise quality grounded in the pipeline's existing verification step, not a separate invented scoring model.",
+    "api/pipeline/route.ts is identical on both branches, so this harness calls runPipeline() directly (the code the route calls) rather than running two Next.js servers."
+  ]
+}

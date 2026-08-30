@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "evaluate": "tsx evaluation/evaluate.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -41,6 +42,7 @@
     "eslint-config-next": "16.3.3",
     "fake-indexeddb": "^6.2.5",
     "tailwindcss": "^4",
+    "tsx": "^4.23.13",
     "typescript": "^5",
     "vitest": "^4.1.11"
   }
