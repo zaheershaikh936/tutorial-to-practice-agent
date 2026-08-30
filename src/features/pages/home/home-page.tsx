@@ -1,17 +1,17 @@
 "use client";
 
 import { usePipeline } from "@/features/pages/home/hooks/use-pipeline";
-import StepsComponents from "./components/steps";
 import { SourceMaterialComponent } from "./components/source-material-component";
+import ChannelSearch from "./components/search-bar";
 
 
 export default function HomePage() {
-    const { transcript, setTranscript, runPipeline, isRunning, complete, error, result } = usePipeline();
+    const { transcript, setTranscript, runPipeline, runFromYoutubeUrl, isRunning, complete, error, result } = usePipeline();
 
     return (
         <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl flex-col">
             <section className="flex flex-1 flex-col justify-center py-12 lg:py-16">
-                <div className="max-w-3xl">
+                <div className="max-w-3xl mx-auto">
                     <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 font-mono text-xs font-medium text-muted-foreground">
                         <span className="size-1.5 rounded-full bg-accent-foreground" />
                         4-step learning pipeline
@@ -25,7 +25,13 @@ export default function HomePage() {
                     </p>
                 </div>
 
-                <StepsComponents complete={complete} />
+                <ChannelSearch onSearch={runFromYoutubeUrl} isRunning={isRunning} />
+
+                <div className="mx-auto mt-8 flex w-full max-w-3xl items-center gap-4">
+                    <div className="h-px flex-1 bg-border" />
+                    <span className="text-xs text-muted-foreground">or paste the transcript directly</span>
+                    <div className="h-px flex-1 bg-border" />
+                </div>
 
                 <SourceMaterialComponent
                     transcript={transcript}

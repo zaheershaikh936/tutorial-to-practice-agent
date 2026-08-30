@@ -13,6 +13,27 @@ export function usePipeline() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PipelineResult | null>(null);
 
+  /** Posts `text` to /api/pipeline and handles the shared result/error/redirect. */
+  async function executePipeline(text: string) {
+    const res = await fetch("/api/pipeline", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error ?? "Something went wrong");
+      return;
+    }
+    const pipelineResult = data as PipelineResult;
+    setResult(pipelineResult);
+    saveLatestPipelineResult(pipelineResult).catch((dbError) => {
+      console.error("Failed to save pipeline result to IndexedDB", dbError);
+    });
+    router.push("/exercise");
+  }
+
   async function runPipeline() {
     if (!transcript.trim() || isRunning) return;
     setIsRunning(true);
@@ -20,23 +41,40 @@ export function usePipeline() {
     setResult(null);
 
     try {
-      const res = await fetch("/api/pipeline", {
+      await executePipeline(transcript);
+    } catch {
+      setError("Failed to reach the API");
+    } finally {
+      setIsRunning(false);
+    }
+  }
+
+  /**
+   * Fetches a YouTube video's transcript, summarizes it (Poolside), then
+   * runs the same Claude pipeline on that summary - one continuous loading
+   * state across both network calls.
+   */
+  async function runFromYoutubeUrl(videoUrl: string) {
+    if (!videoUrl.trim() || isRunning) return;
+    setIsRunning(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const res = await fetch("/api/youtube-transcript", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: transcript }),
+        body: JSON.stringify({ videoUrl }),
       });
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? "Something went wrong");
+        setError(data.error ?? "Could not fetch that video's transcript");
         return;
       }
-      const pipelineResult = data as PipelineResult;
-      setResult(pipelineResult);
-      saveLatestPipelineResult(pipelineResult).catch((dbError) => {
-        console.error("Failed to save pipeline result to IndexedDB", dbError);
-      });
-      router.push("/exercise")
+
+      setTranscript(data.topicSummary);
+      await executePipeline(data.topicSummary);
     } catch {
       setError("Failed to reach the API");
     } finally {
@@ -46,5 +84,5 @@ export function usePipeline() {
 
   const complete = Boolean(result);
 
-  return { transcript, setTranscript, runPipeline, isRunning, complete, error, result };
+  return { transcript, setTranscript, runPipeline, runFromYoutubeUrl, isRunning, complete, error, result };
 }

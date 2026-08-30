@@ -8,6 +8,7 @@ export * from "./exercise-generation";
 export * from "./test-case-generation";
 export * from "./self-verification";
 export * from "./baseline";
+export * from "./topic-summary";
 
 export type PipelineStepName =
   | "concept-extraction"
