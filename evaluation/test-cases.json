@@ -1,0 +1,80 @@
+[
+  {
+    "id": "normal-js-two-pointer",
+    "category": "normal",
+    "input": "In this tutorial we're going to walk through the two-pointer technique for solving array problems in JavaScript. The idea is simple: instead of using nested loops which cost you O(n squared) time, you place one pointer at the start of a sorted array and another at the end. On each step you look at the sum of the two values. If the sum is too small, you move the left pointer forward to increase it. If the sum is too large, you move the right pointer backward to decrease it. You keep narrowing the window until the pointers meet or you find the target pair. This turns an O(n squared) brute force search into a single O(n) pass, which matters a lot once your input arrays get large.",
+    "notes": "Single, well-scoped concept in a common language. Baseline should complete cleanly here too."
+  },
+  {
+    "id": "normal-python-recursion",
+    "category": "normal",
+    "input": "Today's video is about recursion in Python, specifically how to think about breaking a problem down into a base case and a recursive case. We'll use factorial as the running example. The base case is when n equals zero or one, where the function just returns one directly without calling itself again. The recursive case is everything else: the function returns n multiplied by the result of calling itself with n minus one. Each call waits on the next call to finish before it can multiply and return, which builds up a call stack. Understanding that call stack, and why a missing or wrong base case causes infinite recursion, is the real skill here.",
+    "notes": "Different language and concept family from the JS case, to avoid overfitting the eval to one topic."
+  },
+  {
+    "id": "normal-go-channels",
+    "category": "normal",
+    "input": "This walkthrough covers unbuffered channels in Go and how they're used to synchronize goroutines. When you send a value on an unbuffered channel, the sending goroutine blocks until another goroutine is ready to receive that value on the other end. That blocking behavior is actually the point: it lets you coordinate work between goroutines without manually using a mutex or a wait group in simple cases. We'll write a small producer goroutine that computes a result and sends it on a channel, and a consumer in main that receives it. You'll see that the receive blocks main until the producer goroutine actually finishes and sends, which is what gives you a safe handoff of the computed value.",
+    "notes": "Concurrency concept, distinct language runtime and semantics from the other normal cases."
+  },
+  {
+    "id": "normal-css-flexbox",
+    "category": "normal",
+    "input": "Let's talk about centering content with CSS flexbox, since it trips up a lot of beginners. If you set display flex on a container, its direct children become flex items laid out along a main axis. To center those items both horizontally and vertically, you set justify-content to center, which centers along the main axis, and align-items to center, which centers along the cross axis. The common mistake is applying these properties to the child element instead of the parent container - they only have an effect on the flex container itself. Once you internalize that flex properties for alignment always live on the parent, centering becomes mechanical instead of trial and error.",
+    "notes": "Non-algorithmic, front-end concept - checks the pipeline isn't secretly biased toward algorithm-style content."
+  },
+  {
+    "id": "edge-long-verbose-transcript",
+    "category": "edge",
+    "input": "Okay so, welcome back everyone, today's a big one, we've got a lot to cover so let's just dive right in, no more waiting around. So the topic today, the thing we're actually going to focus on for the whole video, is JavaScript closures, and I know, I know, everyone says closures are confusing, but honestly once you see it laid out step by step it clicks, I promise. So first, let's back up. A function in JavaScript doesn't just remember its own code, it also remembers the environment it was created in, that's the whole idea, that's the entire concept in one sentence really. So say you have an outer function, and inside that outer function you declare a variable, let's call it count, and you set it to zero. Now inside that same outer function you define an inner function, and that inner function increments count and returns it. Here's the important part, the part everyone gets tripped up on: if you return that inner function from the outer function, and then call the outer function once to get that inner function back, the inner function still has access to count, even though the outer function has already finished running and returned. Normally you'd think once a function returns, its local variables just disappear, they get cleaned up, garbage collected, gone. But that's not what happens here, because the inner function formed a closure over count when it was created, so JavaScript keeps that variable alive in memory as long as something can still reference it, in this case the inner function. So every time you call that returned inner function, it remembers the count from last time, it doesn't reset back to zero, it just keeps incrementing the same captured variable. That's the whole mechanism behind things like counters, memoization, and private-ish state in JavaScript before classes with real private fields existed. Anyway, that's closures, that's really the whole thing, let's move on.",
+    "notes": "Unusually long and rambling but still squarely on one concept - tests handling of verbose real-world transcript text rather than curated prose."
+  },
+  {
+    "id": "edge-exact-30-word-boundary",
+    "category": "edge",
+    "input": "Binary search works on a sorted array by repeatedly checking the middle element and discarding the half that cannot contain the target, cutting the search space in half every time.",
+    "notes": "Exactly 30 words - the minimum word count both branches should treat as valid input (advanced enforces this explicitly via assertValidTranscript; baseline has no such check but should still succeed)."
+  },
+  {
+    "id": "edge-just-under-boundary",
+    "category": "edge",
+    "input": "Bubble sort repeatedly steps through a list comparing each pair of adjacent elements and swapping them if they are in the wrong order until the whole array ends sorted.",
+    "notes": "29 words, just under the 30-word minimum. Advanced should reject this before making any API call (assertValidTranscript). Baseline has no such gate and will spend a real API call on it - a genuine, measurable robustness/efficiency difference, not a fabricated one."
+  },
+  {
+    "id": "invalid-non-coding-cooking-recipe",
+    "category": "invalid",
+    "input": "Today we're making a simple weeknight pasta. Start by bringing a large pot of salted water to a boil, then add your pasta and cook until just al dente, about nine minutes. While that's going, heat olive oil in a pan, add minced garlic, and cook until fragrant but not browned. Toss in cherry tomatoes and let them soften and burst, then season with salt, pepper, and a pinch of red pepper flakes. Drain the pasta, add it to the pan, toss everything together, and finish with fresh basil and grated parmesan before serving.",
+    "notes": "Not a coding tutorial at all. The concept-extraction prompt explicitly defines an insufficient_content error path for exactly this case - both branches call the same prompt, so both should report it, just handled differently downstream (advanced surfaces it as a typed schema error; baseline JSON.parses whatever comes back)."
+  },
+  {
+    "id": "invalid-non-coding-song-lyrics",
+    "category": "invalid",
+    "input": "Verse one, walking down an empty street tonight, city lights are shining oh so bright, thinking back on everything we had, wondering now if it was good or bad. Chorus, hold on, hold on, we'll make it through somehow, hold on, hold on, it's already here and now. Verse two, every memory feels like yesterday, but the years just keep on slipping away, still I hear your voice inside my head, echoing all the words we never said.",
+    "notes": "Second non-coding sample in a different register (creative writing, not instructional) to make sure the insufficient_content path isn't only tested against one style of off-topic text."
+  },
+  {
+    "id": "invalid-gibberish-random-words",
+    "category": "invalid",
+    "input": "purple elephant runs quickly through the marketplace while seventeen bicycles hum softly under a green umbrella of forgotten socks and tuesday afternoons dissolve into the sound of a distant kazoo orchestra playing backwards through a screen door made entirely of static",
+    "notes": "Incoherent, non-instructional text with no real subject matter. Worst-case malformed input for the concept-extraction step - a useful stress test for how gracefully each branch degrades on genuinely bad input."
+  },
+  {
+    "id": "ambiguous-dual-concept-promises-async",
+    "category": "ambiguous",
+    "input": "In this video we're covering asynchronous JavaScript, and honestly there's two big pieces here so bear with me. First, Promises: a Promise represents a value that isn't ready yet but will be at some point, and you attach .then and .catch handlers to react once it settles. Second, and this is really a separate topic that builds on the first, async/await: you mark a function async, then use await inside it to pause execution until a Promise resolves, which lets you write asynchronous code that reads like synchronous code. We'll look at examples of both styles side by side, converting a .then chain into the equivalent async/await version.",
+    "notes": "Deliberately covers two related-but-distinct concepts (Promises, async/await) in one transcript. The concept-extraction prompt has a documented multiple_concepts_flag for exactly this - checks whether each branch's step-1 output actually flags it, and whether a single downstream exercise still gets forced onto a genuinely two-concept source."
+  },
+  {
+    "id": "ambiguous-vague-rambling-no-clear-concept",
+    "category": "ambiguous",
+    "input": "So today I just wanted to talk generally about, you know, getting better at programming overall, like the mindset stuff more than any specific syntax. A lot of it is just sticking with a problem longer than feels comfortable, reading other people's code, not being afraid to delete something and start over, that kind of thing. There isn't really one trick, it's more about building the habit of sitting with confusion instead of immediately looking up the answer, and slowly you get faster at recognizing patterns you've seen before in different disguises.",
+    "notes": "On-topic (programming) but has no single extractable technical concept - a soft-fail case distinct from the hard off-topic invalid cases above. Good test of whether concept-extraction forces a fake narrow concept out of vague motivational content."
+  },
+  {
+    "id": "duplicate-normal-js-two-pointer-repeat",
+    "category": "duplicate",
+    "input": "In this tutorial we're going to walk through the two-pointer technique for solving array problems in JavaScript. The idea is simple: instead of using nested loops which cost you O(n squared) time, you place one pointer at the start of a sorted array and another at the end. On each step you look at the sum of the two values. If the sum is too small, you move the left pointer forward to increase it. If the sum is too large, you move the right pointer backward to decrease it. You keep narrowing the window until the pointers meet or you find the target pair. This turns an O(n squared) brute force search into a single O(n) pass, which matters a lot once your input arrays get large.",
+    "notes": "Byte-identical input to normal-js-two-pointer, run again later in the suite. Neither branch implements a request-level cache (see README), so this is expected to make a fresh set of real calls on both - the case exists to make that absence of caching a measured fact instead of an assumption."
+  }
+]
