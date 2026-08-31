@@ -6,7 +6,7 @@ import { createHttpClient } from "./create-client";
  * API - no other code needs to change.
  */
 export const API_BASE_URLS = {
-    piston: "http://130.210.56.57.nip.io/api/v2",
+    piston: "https://130.210.56.57.nip.io/api/v2",
     youtubeTranscript: "https://youtube-transcript.ai",
 } as const;
 
