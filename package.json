@@ -9,7 +9,9 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "evaluate": "tsx evaluation/evaluate.ts"
+    "evaluate": "tsx evaluation/evaluate.ts",
+    "baseline": "cd ./evaluation/.baseline-worktree && yarn install && yarn dev && cd ../../",
+    "trajectories": "tsx trajectories/generate-trajectories.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
