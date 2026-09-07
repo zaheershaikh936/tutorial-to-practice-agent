@@ -1,6 +1,6 @@
 import { OpenRouterModel } from "./openrouter-model";
 
-const DEFAULT_MODEL = "anthropic/claude-opus-5";
+const DEFAULT_MODEL = "minimax/minimax-m3:free";
 
 export class ClaudeModel extends OpenRouterModel {
   constructor() {

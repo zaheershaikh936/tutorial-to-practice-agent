@@ -143,7 +143,7 @@ async function main(): Promise<void> {
   const advancedMetrics = aggregateMetrics(advancedRuns);
 
   const provider = process.env.AI_PROVIDER || "claude";
-  const model = process.env.CLAUDE_MODEL || "anthropic/claude-opus-5";
+  const model = process.env.CLAUDE_MODEL || "minimax/minimax-m3:free";
 
   console.log("");
   printConsoleReport(testCases, baselineMetrics, advancedMetrics, { provider, model });
